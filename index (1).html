@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TrendCoder — Trend-following trading bot for MetaTrader 5</title>
+<meta name="description" content="TrendCoder is a trend-following trading bot for MetaTrader 5. Four H4 strategies on gold, silver, Bitcoin and Ethereum with built-in risk management.">
+<link rel="icon" href="trendcoder.ico">
+<style>
+  :root{
+    --bg:#0b0d10; --panel:#12161b; --line:#1f262e; --text:#e8ecf1; --muted:#9aa5b1;
+    --gold:#e2b04a; --gold2:#f3cf7a; --green:#3ecf8e; --red:#ef6b6b;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+
+  /* header */
+  header{position:sticky;top:0;z-index:10;background:rgba(11,13,16,.85);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .nav{display:flex;align-items:center;justify-content:space-between;height:64px}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:19px;letter-spacing:.3px}
+  .logo-mark{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--gold),#a8781f);display:grid;place-items:center}
+  .logo-mark svg{width:18px;height:18px}
+  .nav-links{display:flex;gap:28px;color:var(--muted);font-size:15px}
+  .nav-links a:hover{color:var(--text)}
+  .nav-right{display:flex;align-items:center;gap:12px}
+  .lang{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+  .lang button{background:none;border:0;color:var(--muted);padding:6px 9px;font-size:13px;cursor:pointer;font-weight:600}
+  .lang button.on{background:var(--panel);color:var(--gold2)}
+  .btn{display:inline-flex;align-items:center;gap:8px;border-radius:10px;padding:12px 20px;font-weight:600;font-size:15px;border:1px solid transparent;cursor:pointer;transition:.15s}
+  .btn-gold{background:var(--gold);color:#16120a}
+  .btn-gold:hover{background:var(--gold2)}
+  .btn-ghost{border-color:var(--line);color:var(--text)}
+  .btn-ghost:hover{border-color:#36414d}
+  .btn-sm{padding:8px 14px;font-size:14px}
+
+  /* hero */
+  .hero{padding:88px 0 72px;display:grid;grid-template-columns:1.05fr .95fr;gap:56px;align-items:center}
+  .eyebrow{display:inline-block;color:var(--gold2);font-size:13px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:18px}
+  h1{font-size:50px;line-height:1.1;letter-spacing:-1px;margin-bottom:20px}
+  h1 em{font-style:normal;color:var(--gold)}
+  .lead{color:var(--muted);font-size:18px;max-width:520px;margin-bottom:32px}
+  .hero-cta{display:flex;gap:12px;flex-wrap:wrap}
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:28px}
+  .chip{border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-size:13px;color:var(--muted)}
+
+  /* chart card */
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:16px}
+  .chart{padding:20px}
+  .chart-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;font-size:14px}
+  .chart-top b{font-size:15px}
+  .tag{font-size:12px;padding:3px 8px;border-radius:6px;background:rgba(62,207,142,.12);color:var(--green);font-weight:600}
+  .chart svg{width:100%;height:auto;display:block}
+  .chart-foot{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+  .mini{background:#0e1216;border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+  .mini span{display:block;font-size:12px;color:var(--muted)}
+  .mini b{font-size:15px}
+  .note{font-size:12px;color:#6c7783;margin-top:10px}
+
+  section{padding:80px 0;border-top:1px solid var(--line)}
+  .sec-head{max-width:640px;margin-bottom:44px}
+  h2{font-size:34px;letter-spacing:-.5px;line-height:1.2;margin-bottom:12px}
+  .sec-head p{color:var(--muted);font-size:17px}
+
+  .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .feat{padding:24px}
+  .ico{width:40px;height:40px;border-radius:10px;background:rgba(226,176,74,.12);display:grid;place-items:center;margin-bottom:16px}
+  .ico svg{width:20px;height:20px;stroke:var(--gold);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .feat h3{font-size:17px;margin-bottom:6px}
+  .feat p{color:var(--muted);font-size:15px}
+
+  .steps{counter-reset:s;display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+  .step{padding:24px;position:relative}
+  .step::before{counter-increment:s;content:counter(s);display:grid;place-items:center;width:32px;height:32px;border-radius:50%;border:1px solid var(--gold);color:var(--gold2);font-weight:700;font-size:14px;margin-bottom:14px}
+  .step h3{font-size:16px;margin-bottom:6px}
+  .step p{color:var(--muted);font-size:14.5px}
+
+  .req{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .req ul{list-style:none;padding:24px}
+  .req li{padding:10px 0;border-bottom:1px solid var(--line);display:flex;gap:10px;color:var(--muted);font-size:15px}
+  .req li:last-child{border:0}
+  .req li b{color:var(--text);font-weight:600}
+  .req h3{padding:24px 24px 0;font-size:17px}
+
+  .buy{padding:48px;display:grid;grid-template-columns:1.2fr .8fr;gap:32px;align-items:center;background:linear-gradient(135deg,#15120a,#12161b 55%)}
+  .buy h2{margin-bottom:10px}
+  .buy p{color:var(--muted)}
+  .buy-box{display:flex;flex-direction:column;gap:12px;align-items:stretch}
+  .buy-box .btn{justify-content:center;padding:15px 20px}
+  .buy-small{font-size:13px;color:#6c7783;text-align:center}
+
+  .faq details{border-bottom:1px solid var(--line);padding:18px 0}
+  .faq summary{cursor:pointer;font-weight:600;font-size:16px;list-style:none;display:flex;justify-content:space-between}
+  .faq summary::after{content:"+";color:var(--gold);font-size:20px;line-height:1}
+  .faq details[open] summary::after{content:"–"}
+  .faq details p{color:var(--muted);margin-top:10px;font-size:15px;max-width:820px}
+
+  footer{border-top:1px solid var(--line);padding:40px 0 48px;color:#6c7783;font-size:13px}
+  .risk{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--red);border-radius:10px;padding:16px 18px;margin-bottom:28px;color:var(--muted);font-size:13.5px}
+  .risk b{color:var(--text)}
+  .foot-row{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
+
+  @media (max-width:900px){
+    .hero{grid-template-columns:1fr;padding:56px 0 48px;gap:36px}
+    h1{font-size:38px}
+    .grid4,.steps{grid-template-columns:1fr 1fr}
+    .grid3,.req,.buy{grid-template-columns:1fr}
+    .nav-links{display:none}
+    .buy{padding:28px}
+  }
+  @media (max-width:560px){
+    .grid4,.steps{grid-template-columns:1fr}
+    .nav-right .btn{display:none}
+  }
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     DUZENLE: Telegram kullanici adin (@ olmadan). Butun "Satin al /
+     Iletisim" butonlari buraya gider.
+     ============================================================ -->
+<script>const TELEGRAM_KULLANICI = "TELEGRAM_KULLANICI_ADIN";</script>
+
+<header>
+  <div class="wrap nav">
+    <a href="#" class="logo">
+      <span class="logo-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#16120a" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 17 9 11 13 15 21 7"/><polyline points="15 7 21 7 21 13"/></svg></span>
+      TrendCoder
+    </a>
+    <nav class="nav-links">
+      <a href="#features" data-i="nav_features"></a>
+      <a href="#how" data-i="nav_how"></a>
+      <a href="#req" data-i="nav_req"></a>
+      <a href="#faq" data-i="nav_faq"></a>
+    </nav>
+    <div class="nav-right">
+      <div class="lang" id="lang">
+        <button data-l="en">EN</button><button data-l="tr">TR</button><button data-l="de">DE</button><button data-l="es">ES</button>
+      </div>
+      <a class="btn btn-gold btn-sm tg" data-i="cta_buy"></a>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="hero">
+    <div>
+      <span class="eyebrow" data-i="hero_eyebrow"></span>
+      <h1 data-i="hero_title"></h1>
+      <p class="lead" data-i="hero_lead"></p>
+      <div class="hero-cta">
+        <a class="btn btn-gold tg">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M21.9 4.3 18.7 19.4c-.2 1.1-.9 1.3-1.8.8l-4.9-3.6-2.4 2.3c-.3.3-.5.5-1 .5l.3-5 9.1-8.2c.4-.4-.1-.6-.6-.2L6.2 13.1 1.4 11.6c-1-.3-1-1 .2-1.5L20.5 2.9c.9-.3 1.6.2 1.4 1.4z"/></svg>
+          <span data-i="cta_buy_tg"></span>
+        </a>
+        <a href="#how" class="btn btn-ghost" data-i="cta_how"></a>
+      </div>
+      <div class="chips">
+        <span class="chip">MetaTrader 5</span><span class="chip">XAUUSD</span><span class="chip">XAGUSD</span><span class="chip">BTCUSD</span><span class="chip">ETHUSD</span><span class="chip">H4</span>
+      </div>
+    </div>
+
+    <div class="card chart" aria-hidden="true">
+      <div class="chart-top"><b>XAUUSD · H4</b><span class="tag" data-i="chart_tag"></span></div>
+      <svg viewBox="0 0 440 230">
+        <defs><linearGradient id="g" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#e2b04a" stop-opacity=".22"/><stop offset="1" stop-color="#e2b04a" stop-opacity="0"/></linearGradient></defs>
+        <g stroke="#1f262e"><line x1="0" y1="40" x2="440" y2="40"/><line x1="0" y1="95" x2="440" y2="95"/><line x1="0" y1="150" x2="440" y2="150"/><line x1="0" y1="205" x2="440" y2="205"/></g>
+        <path d="M0 190 L30 182 L60 186 L90 170 L120 174 L150 150 L180 156 L210 130 L240 136 L270 110 L300 116 L330 88 L360 94 L390 66 L420 58 L440 50 L440 230 L0 230Z" fill="url(#g)"/>
+        <path d="M0 190 L30 182 L60 186 L90 170 L120 174 L150 150 L180 156 L210 130 L240 136 L270 110 L300 116 L330 88 L360 94 L390 66 L420 58 L440 50" fill="none" stroke="#e2b04a" stroke-width="2.5"/>
+        <path d="M0 200 L60 196 L120 186 L180 170 L240 152 L300 132 L360 110 L440 84" fill="none" stroke="#5b6773" stroke-width="1.5" stroke-dasharray="4 4"/>
+        <circle cx="150" cy="150" r="6" fill="#3ecf8e"/><text x="160" y="170" fill="#3ecf8e" font-size="12" font-family="system-ui">BUY</text>
+        <line x1="150" y1="198" x2="440" y2="198" stroke="#ef6b6b" stroke-dasharray="3 3"/><text x="400" y="193" fill="#ef6b6b" font-size="11" font-family="system-ui">SL</text>
+        <line x1="150" y1="150" x2="440" y2="150" stroke="#3ecf8e" stroke-opacity=".35" stroke-dasharray="3 3"/><text x="372" y="145" fill="#3ecf8e" font-size="11" font-family="system-ui">BE @ 2R</text>
+      </svg>
+      <div class="chart-foot">
+        <div class="mini"><span data-i="mini_risk"></span><b>1%</b></div>
+        <div class="mini"><span data-i="mini_strat"></span><b>4</b></div>
+        <div class="mini"><span data-i="mini_assets"></span><b>4</b></div>
+      </div>
+      <p class="note" data-i="chart_note"></p>
+    </div>
+  </div>
+</main>
+
+<section id="features">
+  <div class="wrap">
+    <div class="sec-head"><h2 data-i="feat_title"></h2><p data-i="feat_sub"></p></div>
+    <div class="grid4">
+      <div class="card feat"><div class="ico"><svg viewBox="0 0 24 24"><polyline points="3 17 9 11 13 15 21 7"/></svg></div><h3 data-i="f1_t"></h3><p data-i="f1_d"></p></div>
+      <div class="card feat"><div class="ico"><svg viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/></svg></div><h3 data-i="f2_t"></h3><p data-i="f2_d"></p></div>
+      <div class="card feat"><div class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div><h3 data-i="f3_t"></h3><p data-i="f3_d"></p></div>
+      <div class="card feat"><div class="ico"><svg viewBox="0 0 24 24"><path d="M21 4 3 11l6 2 2 6 3-4 5 4z"/></svg></div><h3 data-i="f4_t"></h3><p data-i="f4_d"></p></div>
+    </div>
+    <div class="grid3" style="margin-top:16px">
+      <div class="card feat"><div class="ico"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 21h8"/></svg></div><h3 data-i="f5_t"></h3><p data-i="f5_d"></p></div>
+      <div class="card feat"><div class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg></div><h3 data-i="f6_t"></h3><p data-i="f6_d"></p></div>
+      <div class="card feat"><div class="ico"><svg viewBox="0 0 24 24"><path d="M12 3v12m0 0-4-4m4 4 4-4M4 21h16"/></svg></div><h3 data-i="f7_t"></h3><p data-i="f7_d"></p></div>
+    </div>
+  </div>
+</section>
+
+<section id="how">
+  <div class="wrap">
+    <div class="sec-head"><h2 data-i="how_title"></h2><p data-i="how_sub"></p></div>
+    <div class="steps">
+      <div class="card step"><h3 data-i="s1_t"></h3><p data-i="s1_d"></p></div>
+      <div class="card step"><h3 data-i="s2_t"></h3><p data-i="s2_d"></p></div>
+      <div class="card step"><h3 data-i="s3_t"></h3><p data-i="s3_d"></p></div>
+      <div class="card step"><h3 data-i="s4_t"></h3><p data-i="s4_d"></p></div>
+    </div>
+  </div>
+</section>
+
+<section id="req">
+  <div class="wrap">
+    <div class="sec-head"><h2 data-i="req_title"></h2><p data-i="req_sub"></p></div>
+    <div class="req">
+      <div class="card"><h3 data-i="req_need"></h3><ul>
+        <li><b>Windows 10 / 11</b><span>64-bit</span></li>
+        <li><b>MetaTrader 5</b><span data-i="req_mt5"></span></li>
+        <li><b data-i="req_acc_t"></b><span data-i="req_acc"></span></li>
+        <li><b data-i="req_pc_t"></b><span data-i="req_pc"></span></li>
+      </ul></div>
+      <div class="card"><h3 data-i="req_get"></h3><ul>
+        <li><b data-i="g1_t"></b><span data-i="g1"></span></li>
+        <li><b data-i="g2_t"></b><span data-i="g2"></span></li>
+        <li><b data-i="g3_t"></b><span data-i="g3"></span></li>
+        <li><b data-i="g4_t"></b><span data-i="g4"></span></li>
+      </ul></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="card buy">
+      <div><h2 data-i="buy_title"></h2><p data-i="buy_sub"></p></div>
+      <div class="buy-box">
+        <a class="btn btn-gold tg">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M21.9 4.3 18.7 19.4c-.2 1.1-.9 1.3-1.8.8l-4.9-3.6-2.4 2.3c-.3.3-.5.5-1 .5l.3-5 9.1-8.2c.4-.4-.1-.6-.6-.2L6.2 13.1 1.4 11.6c-1-.3-1-1 .2-1.5L20.5 2.9c.9-.3 1.6.2 1.4 1.4z"/></svg>
+          <span data-i="cta_buy_tg"></span>
+        </a>
+        <span class="buy-small" data-i="buy_small"></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="wrap">
+    <div class="sec-head"><h2 data-i="faq_title"></h2></div>
+    <div class="faq">
+      <details><summary data-i="q1"></summary><p data-i="a1"></p></details>
+      <details><summary data-i="q2"></summary><p data-i="a2"></p></details>
+      <details><summary data-i="q3"></summary><p data-i="a3"></p></details>
+      <details><summary data-i="q4"></summary><p data-i="a4"></p></details>
+      <details><summary data-i="q5"></summary><p data-i="a5"></p></details>
+      <details><summary data-i="q6"></summary><p data-i="a6"></p></details>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="risk" data-i="risk"></div>
+    <div class="foot-row"><span>© <span id="yil"></span> TrendCoder</span><a class="tg" data-i="foot_contact"></a></div>
+  </div>
+</footer>
+
+<script>
+const T = {
+en:{
+ nav_features:"Features",nav_how:"How it works",nav_req:"Requirements",nav_faq:"FAQ",
+ cta_buy:"Get TrendCoder",cta_buy_tg:"Buy via Telegram",cta_how:"How it works",
+ hero_eyebrow:"Trading bot for MetaTrader 5",
+ hero_title:"Follow the trend. <em>Automatically.</em>",
+ hero_lead:"TrendCoder runs four trend-following strategies on the H4 chart for gold, silver, Bitcoin and Ethereum — with position sizing, stop losses and breakeven handled for you.",
+ chart_tag:"Trend: up",mini_risk:"Risk per trade",mini_strat:"Strategies",mini_assets:"Markets",
+ chart_note:"Illustration only. Not a real trade.",
+ feat_title:"Built for disciplined trend trading",feat_sub:"No guessing, no screen watching. The bot follows clear rules on every candle close.",
+ f1_t:"4 trend strategies",f1_d:"Moving-average, momentum, volatility-trend and breakout systems work side by side.",
+ f2_t:"Risk management",f2_d:"Lot size from your risk %, ATR-based stop loss and automatic breakeven at 2R.",
+ f3_t:"H4 decisions",f3_d:"Signals only on closed H4 candles — no noise from small timeframes.",
+ f4_t:"Telegram alerts",f4_d:"Get notified when a position opens or closes, wherever you are.",
+ f5_t:"Simple desktop app",f5_d:"Start, stop and watch your positions from one clean window.",
+ f6_t:"4 languages",f6_d:"English, Türkçe, Deutsch and Español — in the app and the installer.",
+ f7_t:"One-click installer",f7_d:"A standard Windows setup. No Python or technical setup needed.",
+ how_title:"How it works",how_sub:"From purchase to your first automated trade in a few minutes.",
+ s1_t:"Get your license",s1_d:"Contact us on Telegram and receive your license key and download link.",
+ s2_t:"Install",s2_d:"Run the setup file on your Windows PC. It installs everything it needs.",
+ s3_t:"Connect MT5",s3_d:"Open MetaTrader 5, log in to your broker account and start TrendCoder.",
+ s4_t:"Let it run",s4_d:"The bot checks every H4 close and manages positions by its rules.",
+ req_title:"Requirements",req_sub:"What you need before you start.",
+ req_need:"You need",req_mt5:"Installed and logged in",
+ req_acc_t:"Broker account",req_acc:"Any MT5 broker that offers the symbols",
+ req_pc_t:"Always-on PC or VPS",req_pc:"The bot only trades while running",
+ req_get:"You get",g1_t:"License key",g1:"Personal activation",g2_t:"Installer",g2:"Latest version",
+ g3_t:"Updates",g3:"New versions as released",g4_t:"Support",g4:"Via Telegram",
+ buy_title:"Ready to start?",buy_sub:"Message us on Telegram for pricing and your license. We usually reply within a few hours.",
+ buy_small:"You will be redirected to Telegram.",
+ faq_title:"Frequently asked questions",
+ q1:"Which brokers does it work with?",a1:"Any broker that provides MetaTrader 5 and the traded symbols. Symbol names are detected for your broker.",
+ q2:"Can I use it on prop firm accounts?",a2:"Many prop firms do not allow trading bots (Expert Advisors). Check your firm's rules before using TrendCoder on a funded or challenge account.",
+ q3:"Does my computer need to stay on?",a3:"Yes. TrendCoder trades only while it is running. For 24/7 operation many users run it on a Windows VPS.",
+ q4:"How much do I need to start?",a4:"Smaller accounts are limited by the broker's minimum lot size, which can make the real risk per trade higher than 1%. A larger balance lets the bot follow its risk settings more precisely.",
+ q5:"Is profit guaranteed?",a5:"No. Trend-following systems have losing periods, especially in sideways markets. Past results do not guarantee future performance.",
+ q6:"Windows shows a warning when I open the installer.",a6:"This can happen with new software. Click “More info” → “Run anyway”. If Smart App Control blocks it, contact us on Telegram.",
+ risk:"<b>Risk warning:</b> Trading forex, metals and cryptocurrencies with leverage carries a high level of risk and may not be suitable for all investors. You can lose some or all of your capital. TrendCoder is a software tool and does not provide investment advice. Past or simulated performance is not indicative of future results.",
+ foot_contact:"Contact on Telegram"
+},
+tr:{
+ nav_features:"Özellikler",nav_how:"Nasıl çalışır",nav_req:"Gereksinimler",nav_faq:"SSS",
+ cta_buy:"TrendCoder Al",cta_buy_tg:"Telegram'dan satın al",cta_how:"Nasıl çalışır",
+ hero_eyebrow:"MetaTrader 5 için işlem botu",
+ hero_title:"Trendi takip et. <em>Otomatik olarak.</em>",
+ hero_lead:"TrendCoder; altın, gümüş, Bitcoin ve Ethereum'da H4 grafikte dört trend takip stratejisi çalıştırır. Lot hesabı, stop loss ve başabaş senin yerine yapılır.",
+ chart_tag:"Trend: yukarı",mini_risk:"İşlem başı risk",mini_strat:"Strateji",mini_assets:"Piyasa",
+ chart_note:"Sadece görseldir. Gerçek bir işlem değildir.",
+ feat_title:"Disiplinli trend işlemleri için",feat_sub:"Tahmin yok, ekran başında beklemek yok. Bot her mum kapanışında net kurallarla çalışır.",
+ f1_t:"4 trend stratejisi",f1_d:"Hareketli ortalama, momentum, volatilite-trend ve kırılım sistemleri birlikte çalışır.",
+ f2_t:"Risk yönetimi",f2_d:"Risk yüzdene göre lot, ATR'ye dayalı stop loss ve 2R'de otomatik başabaş.",
+ f3_t:"H4 kararları",f3_d:"Sinyaller sadece kapanmış H4 mumlarında — küçük zaman dilimlerinin gürültüsü yok.",
+ f4_t:"Telegram bildirimleri",f4_d:"Pozisyon açıldığında veya kapandığında nerede olursan ol haberin olur.",
+ f5_t:"Sade masaüstü uygulaması",f5_d:"Başlat, durdur ve pozisyonlarını tek bir pencereden izle.",
+ f6_t:"4 dil",f6_d:"English, Türkçe, Deutsch ve Español — uygulamada ve kurulumda.",
+ f7_t:"Tek tıkla kurulum",f7_d:"Standart Windows kurulumu. Python ya da teknik ayar gerekmez.",
+ how_title:"Nasıl çalışır",how_sub:"Satın almadan ilk otomatik işleme birkaç dakikada.",
+ s1_t:"Lisansını al",s1_d:"Telegram'dan bize yaz, lisans anahtarını ve indirme linkini al.",
+ s2_t:"Kur",s2_d:"Kurulum dosyasını Windows bilgisayarında çalıştır. Gereken her şeyi kurar.",
+ s3_t:"MT5'e bağlan",s3_d:"MetaTrader 5'i aç, broker hesabına giriş yap ve TrendCoder'ı başlat.",
+ s4_t:"Çalışsın",s4_d:"Bot her H4 kapanışını kontrol eder ve pozisyonları kurallarına göre yönetir.",
+ req_title:"Gereksinimler",req_sub:"Başlamadan önce gerekenler.",
+ req_need:"Gerekenler",req_mt5:"Kurulu ve giriş yapılmış",
+ req_acc_t:"Broker hesabı",req_acc:"Sembolleri sunan herhangi bir MT5 brokeri",
+ req_pc_t:"Sürekli açık PC veya VPS",req_pc:"Bot sadece çalışırken işlem yapar",
+ req_get:"Alacakların",g1_t:"Lisans anahtarı",g1:"Kişisel aktivasyon",g2_t:"Kurulum dosyası",g2:"En güncel sürüm",
+ g3_t:"Güncellemeler",g3:"Yeni sürümler çıktıkça",g4_t:"Destek",g4:"Telegram üzerinden",
+ buy_title:"Başlamaya hazır mısın?",buy_sub:"Fiyat ve lisans için Telegram'dan yaz. Genelde birkaç saat içinde dönüyoruz.",
+ buy_small:"Telegram'a yönlendirileceksin.",
+ faq_title:"Sık sorulan sorular",
+ q1:"Hangi brokerlarla çalışır?",a1:"MetaTrader 5 ve işlem yapılan sembolleri sunan her brokerla. Sembol adları brokerına göre otomatik bulunur.",
+ q2:"Prop firma hesaplarında kullanabilir miyim?",a2:"Birçok prop firma bot (Expert Advisor) kullanımına izin vermez. Funded ya da challenge hesabında kullanmadan önce firmanın kurallarını kontrol et.",
+ q3:"Bilgisayarım açık kalmalı mı?",a3:"Evet. TrendCoder sadece çalışırken işlem yapar. 7/24 çalışması için birçok kullanıcı Windows VPS kullanır.",
+ q4:"Başlamak için ne kadar gerekir?",a4:"Küçük hesaplarda brokerın minimum lotu nedeniyle işlem başı gerçek risk %1'in üstüne çıkabilir. Daha büyük bakiye, botun risk ayarlarını daha doğru uygulamasını sağlar.",
+ q5:"Kâr garanti mi?",a5:"Hayır. Trend takip sistemlerinin, özellikle yatay piyasalarda, zararlı dönemleri olur. Geçmiş sonuçlar gelecekteki performansı garanti etmez.",
+ q6:"Kurulumu açınca Windows uyarı veriyor.",a6:"Yeni yazılımlarda bu olabilir. “Ek bilgi” → “Yine de çalıştır”a tıkla. Akıllı Uygulama Denetimi engellerse Telegram'dan bize yaz.",
+ risk:"<b>Risk uyarısı:</b> Forex, metal ve kripto paralarda kaldıraçlı işlem yüksek risk taşır ve her yatırımcıya uygun olmayabilir. Sermayenin bir kısmını veya tamamını kaybedebilirsin. TrendCoder bir yazılım aracıdır ve yatırım tavsiyesi vermez. Geçmiş veya simüle edilmiş performans gelecekteki sonuçların göstergesi değildir.",
+ foot_contact:"Telegram'dan iletişim"
+},
+de:{
+ nav_features:"Funktionen",nav_how:"So funktioniert's",nav_req:"Voraussetzungen",nav_faq:"FAQ",
+ cta_buy:"TrendCoder holen",cta_buy_tg:"Über Telegram kaufen",cta_how:"So funktioniert's",
+ hero_eyebrow:"Trading-Bot für MetaTrader 5",
+ hero_title:"Folge dem Trend. <em>Automatisch.</em>",
+ hero_lead:"TrendCoder führt vier Trendfolge-Strategien im H4-Chart für Gold, Silber, Bitcoin und Ethereum aus – Positionsgröße, Stop-Loss und Breakeven werden für dich gesteuert.",
+ chart_tag:"Trend: steigend",mini_risk:"Risiko pro Trade",mini_strat:"Strategien",mini_assets:"Märkte",
+ chart_note:"Nur Illustration. Kein echter Trade.",
+ feat_title:"Für diszipliniertes Trendtrading",feat_sub:"Kein Raten, kein Starren auf den Bildschirm. Der Bot folgt bei jedem Kerzenschluss klaren Regeln.",
+ f1_t:"4 Trendstrategien",f1_d:"Gleitende Durchschnitte, Momentum, Volatilitäts-Trend und Breakout arbeiten zusammen.",
+ f2_t:"Risikomanagement",f2_d:"Lotgröße aus deinem Risiko-%, ATR-basierter Stop-Loss und automatischer Breakeven bei 2R.",
+ f3_t:"H4-Entscheidungen",f3_d:"Signale nur bei geschlossenen H4-Kerzen – kein Rauschen kleiner Zeitrahmen.",
+ f4_t:"Telegram-Benachrichtigungen",f4_d:"Erfahre sofort, wenn eine Position eröffnet oder geschlossen wird.",
+ f5_t:"Einfache Desktop-App",f5_d:"Starten, stoppen und Positionen in einem übersichtlichen Fenster verfolgen.",
+ f6_t:"4 Sprachen",f6_d:"English, Türkçe, Deutsch und Español – in der App und im Installer.",
+ f7_t:"Installation mit einem Klick",f7_d:"Standard-Windows-Setup. Kein Python oder technisches Setup nötig.",
+ how_title:"So funktioniert's",how_sub:"Vom Kauf bis zum ersten automatischen Trade in wenigen Minuten.",
+ s1_t:"Lizenz erhalten",s1_d:"Schreib uns auf Telegram und erhalte Lizenzschlüssel und Download-Link.",
+ s2_t:"Installieren",s2_d:"Starte die Setup-Datei auf deinem Windows-PC. Alles Nötige wird installiert.",
+ s3_t:"MT5 verbinden",s3_d:"Öffne MetaTrader 5, melde dich bei deinem Broker an und starte TrendCoder.",
+ s4_t:"Laufen lassen",s4_d:"Der Bot prüft jeden H4-Schluss und verwaltet Positionen nach seinen Regeln.",
+ req_title:"Voraussetzungen",req_sub:"Was du vor dem Start brauchst.",
+ req_need:"Du brauchst",req_mt5:"Installiert und angemeldet",
+ req_acc_t:"Broker-Konto",req_acc:"Jeder MT5-Broker mit den Symbolen",
+ req_pc_t:"Dauerhaft laufender PC oder VPS",req_pc:"Der Bot handelt nur, solange er läuft",
+ req_get:"Du erhältst",g1_t:"Lizenzschlüssel",g1:"Persönliche Aktivierung",g2_t:"Installer",g2:"Neueste Version",
+ g3_t:"Updates",g3:"Neue Versionen bei Veröffentlichung",g4_t:"Support",g4:"Über Telegram",
+ buy_title:"Bereit loszulegen?",buy_sub:"Schreib uns auf Telegram für Preise und deine Lizenz. Wir antworten meist innerhalb weniger Stunden.",
+ buy_small:"Du wirst zu Telegram weitergeleitet.",
+ faq_title:"Häufige Fragen",
+ q1:"Mit welchen Brokern funktioniert es?",a1:"Mit jedem Broker, der MetaTrader 5 und die gehandelten Symbole anbietet. Symbolnamen werden automatisch erkannt.",
+ q2:"Kann ich es bei Prop-Firmen nutzen?",a2:"Viele Prop-Firmen erlauben keine Trading-Bots (Expert Advisors). Prüfe die Regeln deiner Firma vor dem Einsatz auf Funded- oder Challenge-Konten.",
+ q3:"Muss mein Computer eingeschaltet bleiben?",a3:"Ja. TrendCoder handelt nur, solange er läuft. Für 24/7-Betrieb nutzen viele einen Windows-VPS.",
+ q4:"Wie viel brauche ich zum Start?",a4:"Bei kleinen Konten kann die Mindestlotgröße des Brokers das tatsächliche Risiko pro Trade über 1 % heben. Ein größeres Guthaben lässt den Bot seine Risikoeinstellungen genauer umsetzen.",
+ q5:"Ist Gewinn garantiert?",a5:"Nein. Trendfolgesysteme haben Verlustphasen, besonders in Seitwärtsmärkten. Vergangene Ergebnisse garantieren keine zukünftige Performance.",
+ q6:"Windows zeigt beim Öffnen des Installers eine Warnung.",a6:"Das kann bei neuer Software vorkommen. Klicke auf „Weitere Informationen“ → „Trotzdem ausführen“. Blockiert die intelligente App-Steuerung, schreib uns auf Telegram.",
+ risk:"<b>Risikohinweis:</b> Der Handel mit Devisen, Metallen und Kryptowährungen mit Hebel ist mit hohem Risiko verbunden und nicht für alle Anleger geeignet. Du kannst einen Teil oder dein gesamtes Kapital verlieren. TrendCoder ist ein Software-Tool und bietet keine Anlageberatung. Vergangene oder simulierte Ergebnisse sind kein Indikator für zukünftige Ergebnisse.",
+ foot_contact:"Kontakt über Telegram"
+},
+es:{
+ nav_features:"Funciones",nav_how:"Cómo funciona",nav_req:"Requisitos",nav_faq:"FAQ",
+ cta_buy:"Obtener TrendCoder",cta_buy_tg:"Comprar por Telegram",cta_how:"Cómo funciona",
+ hero_eyebrow:"Bot de trading para MetaTrader 5",
+ hero_title:"Sigue la tendencia. <em>Automáticamente.</em>",
+ hero_lead:"TrendCoder ejecuta cuatro estrategias de seguimiento de tendencia en el gráfico H4 para oro, plata, Bitcoin y Ethereum, gestionando por ti el tamaño de posición, el stop loss y el breakeven.",
+ chart_tag:"Tendencia: alcista",mini_risk:"Riesgo por operación",mini_strat:"Estrategias",mini_assets:"Mercados",
+ chart_note:"Solo ilustración. No es una operación real.",
+ feat_title:"Hecho para un trading de tendencia disciplinado",feat_sub:"Sin adivinar, sin mirar la pantalla. El bot sigue reglas claras en cada cierre de vela.",
+ f1_t:"4 estrategias de tendencia",f1_d:"Medias móviles, momentum, tendencia de volatilidad y ruptura trabajan juntas.",
+ f2_t:"Gestión del riesgo",f2_d:"Lote según tu % de riesgo, stop loss basado en ATR y breakeven automático en 2R.",
+ f3_t:"Decisiones en H4",f3_d:"Señales solo con velas H4 cerradas, sin el ruido de marcos menores.",
+ f4_t:"Alertas por Telegram",f4_d:"Recibe un aviso cuando se abre o cierra una posición, estés donde estés.",
+ f5_t:"App de escritorio sencilla",f5_d:"Inicia, detén y sigue tus posiciones desde una sola ventana.",
+ f6_t:"4 idiomas",f6_d:"English, Türkçe, Deutsch y Español, en la app y en el instalador.",
+ f7_t:"Instalación en un clic",f7_d:"Instalador estándar de Windows. Sin Python ni configuración técnica.",
+ how_title:"Cómo funciona",how_sub:"De la compra a tu primera operación automática en pocos minutos.",
+ s1_t:"Obtén tu licencia",s1_d:"Escríbenos por Telegram y recibe tu clave de licencia y el enlace de descarga.",
+ s2_t:"Instala",s2_d:"Ejecuta el instalador en tu PC con Windows. Instala todo lo necesario.",
+ s3_t:"Conecta MT5",s3_d:"Abre MetaTrader 5, inicia sesión en tu bróker y arranca TrendCoder.",
+ s4_t:"Déjalo trabajar",s4_d:"El bot revisa cada cierre H4 y gestiona las posiciones según sus reglas.",
+ req_title:"Requisitos",req_sub:"Lo que necesitas antes de empezar.",
+ req_need:"Necesitas",req_mt5:"Instalado y con sesión iniciada",
+ req_acc_t:"Cuenta de bróker",req_acc:"Cualquier bróker MT5 con los símbolos",
+ req_pc_t:"PC siempre encendido o VPS",req_pc:"El bot solo opera mientras está en marcha",
+ req_get:"Recibes",g1_t:"Clave de licencia",g1:"Activación personal",g2_t:"Instalador",g2:"Última versión",
+ g3_t:"Actualizaciones",g3:"Nuevas versiones al publicarse",g4_t:"Soporte",g4:"Por Telegram",
+ buy_title:"¿Listo para empezar?",buy_sub:"Escríbenos por Telegram para precios y tu licencia. Normalmente respondemos en pocas horas.",
+ buy_small:"Serás redirigido a Telegram.",
+ faq_title:"Preguntas frecuentes",
+ q1:"¿Con qué brókers funciona?",a1:"Con cualquier bróker que ofrezca MetaTrader 5 y los símbolos operados. Los nombres de símbolos se detectan automáticamente.",
+ q2:"¿Puedo usarlo en cuentas de prop firms?",a2:"Muchas prop firms no permiten bots (Expert Advisors). Revisa las reglas de tu firma antes de usarlo en una cuenta fondeada o de challenge.",
+ q3:"¿Mi ordenador debe estar encendido?",a3:"Sí. TrendCoder solo opera mientras está en marcha. Para funcionar 24/7 muchos usan un VPS con Windows.",
+ q4:"¿Cuánto necesito para empezar?",a4:"En cuentas pequeñas, el lote mínimo del bróker puede elevar el riesgo real por operación por encima del 1 %. Un saldo mayor permite aplicar la configuración de riesgo con más precisión.",
+ q5:"¿El beneficio está garantizado?",a5:"No. Los sistemas de tendencia tienen periodos de pérdidas, sobre todo en mercados laterales. Los resultados pasados no garantizan el rendimiento futuro.",
+ q6:"Windows muestra un aviso al abrir el instalador.",a6:"Puede ocurrir con software nuevo. Haz clic en “Más información” → “Ejecutar de todas formas”. Si Smart App Control lo bloquea, escríbenos por Telegram.",
+ risk:"<b>Advertencia de riesgo:</b> Operar con divisas, metales y criptomonedas con apalancamiento conlleva un alto riesgo y puede no ser adecuado para todos los inversores. Puedes perder parte o la totalidad de tu capital. TrendCoder es una herramienta de software y no ofrece asesoramiento de inversión. El rendimiento pasado o simulado no es indicativo de resultados futuros.",
+ foot_contact:"Contacto por Telegram"
+}};
+
+function dilUygula(l){
+  const d = T[l] || T.en;
+  document.documentElement.lang = l;
+  document.querySelectorAll("[data-i]").forEach(el=>{
+    const v = d[el.dataset.i]; if(v!==undefined) el.innerHTML = v;
+  });
+  document.querySelectorAll("#lang button").forEach(b=>b.classList.toggle("on", b.dataset.l===l));
+  try{ localStorage.setItem("tc_lang", l); }catch(e){}
+}
+document.querySelectorAll("#lang button").forEach(b=>b.onclick=()=>dilUygula(b.dataset.l));
+document.querySelectorAll(".tg").forEach(a=>{ a.href="https://t.me/"+TELEGRAM_KULLANICI; a.target="_blank"; a.rel="noopener"; });
+document.getElementById("yil").textContent = new Date().getFullYear();
+
+let ilk = "en";
+try{
+  const k = localStorage.getItem("tc_lang");
+  if(k && T[k]) ilk = k;
+  else { const n=(navigator.language||"en").slice(0,2); if(T[n]) ilk = n; }
+}catch(e){}
+dilUygula(ilk);
+</script>
+</body>
+</html>
