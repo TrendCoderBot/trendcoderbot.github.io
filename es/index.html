@@ -114,6 +114,8 @@ h1 em{font-style:normal;background:linear-gradient(90deg,var(--gold2),var(--gold
 @keyframes mq{to{transform:translateX(-50%)}}
 
 section{position:relative;z-index:1;padding:96px 0}
+.vid{max-width:340px;margin:0 auto;border-radius:24px;overflow:hidden;border:1px solid var(--line2);background:#000;box-shadow:0 40px 90px -30px rgba(229,179,78,.35)}
+.vid video{display:block;width:100%;aspect-ratio:9/16;background:#000}
 .sec-head{max-width:660px;margin-bottom:48px}
 .sec-head.center{margin-left:auto;margin-right:auto;text-align:center}
 .kicker{color:var(--gold);font-size:13px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;margin-bottom:12px;display:block}
@@ -309,6 +311,13 @@ const FIYATLAR = { weekly: "$15", monthly: "$50" };
 
 <div class="marquee"><div class="mq-track" id="mq"></div></div>
 
+<section id="video" style="padding-bottom:0">
+  <div class="wrap">
+    <div class="sec-head center rv"><span class="kicker" data-i="vid_k">Vídeo</span><h2 data-i="vid_t">TrendCoder en 17 segundos</h2><p data-i="vid_s">Un vistazo rápido a la app, las estrategias y las reglas de riesgo.</p></div>
+    <div class="vid rv"><video controls playsinline preload="none" poster="/video_poster_es.jpg" src="/TrendCoder_Promo_ES.mp4"></video></div>
+  </div>
+</section>
+
 <section id="strategies">
   <div class="wrap">
     <div class="sec-head rv"><span class="kicker" data-i="k_strat">El motor</span><h2 data-i="strat_title">Cuatro estrategias. Una cartera.</h2><p data-i="strat_sub">Distintas señales de tendencia trabajan juntas; el bot no depende de una sola idea.</p></div>
@@ -468,6 +477,7 @@ const FIYATLAR = { weekly: "$15", monthly: "$50" };
 <script>
 const T={
 en:{
+vid_k:"Video",vid_t:"TrendCoder in 17 seconds",vid_s:"A quick look at the app, the strategies and the risk rules.",
 msg_plan:"Hi! I want to buy the TrendCoder Trend plan – {p}.",msg_w:"Weekly ({f})",msg_m:"Monthly ({f})",msg_gen:"Hi! I would like to buy TrendCoder. Can you tell me more?",
  dl_btn:"Download for Windows",dl_note:"Free download — a license (login) from Telegram is required to use the bot. Windows 10/11, 64-bit.",
  nav_strat:"Strategies",nav_features:"Features",nav_plans:"Plans",nav_faq:"FAQ",
@@ -518,6 +528,7 @@ msg_plan:"Hi! I want to buy the TrendCoder Trend plan – {p}.",msg_w:"Weekly ({
  risk:"<b>Risk warning:</b> Trading forex, metals and cryptocurrencies with leverage carries a high level of risk and may not be suitable for all investors. You can lose some or all of your capital. TrendCoder is a software tool and does not provide investment advice. Past or simulated performance is not indicative of future results."
 },
 tr:{
+vid_k:"Video",vid_t:"17 saniyede TrendCoder",vid_s:"Uygulamaya, stratejilere ve risk kurallarına hızlı bir bakış.",
 msg_plan:"Merhaba! TrendCoder Trend paketi – {p} almak istiyorum.",msg_w:"Haftalık ({f})",msg_m:"Aylık ({f})",msg_gen:"Merhaba! TrendCoder satın almak istiyorum, bilgi alabilir miyim?",
  dl_btn:"Windows için indir",dl_note:"İndirme ücretsiz — botu kullanmak için Telegram'dan alınan lisans (giriş bilgisi) gerekir. Windows 10/11, 64-bit.",
  nav_strat:"Stratejiler",nav_features:"Özellikler",nav_plans:"Paketler",nav_faq:"SSS",
@@ -568,6 +579,7 @@ msg_plan:"Merhaba! TrendCoder Trend paketi – {p} almak istiyorum.",msg_w:"Haft
  risk:"<b>Risk uyarısı:</b> Forex, metal ve kripto paralarda kaldıraçlı işlem yüksek risk taşır ve her yatırımcıya uygun olmayabilir. Sermayenin bir kısmını veya tamamını kaybedebilirsin. TrendCoder bir yazılım aracıdır ve yatırım tavsiyesi vermez. Geçmiş veya simüle edilmiş performans gelecekteki sonuçların göstergesi değildir."
 },
 de:{
+vid_k:"Video",vid_t:"TrendCoder in 17 Sekunden",vid_s:"Ein kurzer Blick auf App, Strategien und Risikoregeln.",
 msg_plan:"Hallo! Ich möchte das TrendCoder Trend-Paket – {p} kaufen.",msg_w:"Wöchentlich ({f})",msg_m:"Monatlich ({f})",msg_gen:"Hallo! Ich möchte TrendCoder kaufen. Kannst du mir mehr sagen?",
  dl_btn:"Für Windows herunterladen",dl_note:"Kostenloser Download – zur Nutzung ist eine Lizenz (Login) über Telegram nötig. Windows 10/11, 64-bit.",
  nav_strat:"Strategien",nav_features:"Funktionen",nav_plans:"Pakete",nav_faq:"FAQ",
@@ -618,6 +630,7 @@ msg_plan:"Hallo! Ich möchte das TrendCoder Trend-Paket – {p} kaufen.",msg_w:"
  risk:"<b>Risikohinweis:</b> Der Handel mit Devisen, Metallen und Kryptowährungen mit Hebel ist mit hohem Risiko verbunden und nicht für alle Anleger geeignet. Du kannst einen Teil oder dein gesamtes Kapital verlieren. TrendCoder ist ein Software-Tool und bietet keine Anlageberatung. Vergangene oder simulierte Ergebnisse sind kein Indikator für zukünftige Ergebnisse."
 },
 es:{
+vid_k:"Vídeo",vid_t:"TrendCoder en 17 segundos",vid_s:"Un vistazo rápido a la app, las estrategias y las reglas de riesgo.",
 msg_plan:"¡Hola! Quiero comprar el plan Trend de TrendCoder – {p}.",msg_w:"Semanal ({f})",msg_m:"Mensual ({f})",msg_gen:"¡Hola! Quiero comprar TrendCoder. ¿Me das más información?",
  dl_btn:"Descargar para Windows",dl_note:"Descarga gratuita: para usar el bot necesitas una licencia (acceso) por Telegram. Windows 10/11, 64 bits.",
  nav_strat:"Estrategias",nav_features:"Funciones",nav_plans:"Planes",nav_faq:"FAQ",
