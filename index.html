@@ -690,8 +690,20 @@ function fiyatYaz(){
     else{el.className="price ask";el.textContent=d.ask;}
   });
 }
+/* REFERANS: trendcoderbot.com/tr/?ref=ahmet → Telegram mesajinin sonuna "(Ref: ahmet)" eklenir.
+   Ilk gelinen ref 30 gun hatirlanir; dil degistirince de kaybolmaz. */
+const REF=(function(){
+  const temiz=v=>(v||"").replace(/[^A-Za-z0-9_-]/g,"").slice(0,30);
+  let r=temiz(new URLSearchParams(location.search).get("ref"));
+  try{
+    if(r){ if(!localStorage.getItem("tc_ref")) localStorage.setItem("tc_ref",JSON.stringify({r:r,t:Date.now()})); }
+    const k=JSON.parse(localStorage.getItem("tc_ref")||"null");
+    if(k && Date.now()-k.t<30*864e5) r=temiz(k.r); else if(k) localStorage.removeItem("tc_ref");
+  }catch(e){}
+  return r;
+})();
 function linkYaz(){
-  const d=T[dil], tg=t=>"https://t.me/"+SATIS_TG+"?text="+encodeURIComponent(t);
+  const d=T[dil], ek=REF?" (Ref: "+REF+")":"", tg=t=>"https://t.me/"+SATIS_TG+"?text="+encodeURIComponent(t+ek);
   document.querySelectorAll(".tg").forEach(a=>{
     const p=a.dataset.plan;
     let m=d.msg_gen;
@@ -700,6 +712,7 @@ function linkYaz(){
     a.href=tg(m); a.target="_blank"; a.rel="noopener";
   });
   document.querySelectorAll(".kanal").forEach(a=>{a.href=TELEGRAM_LINK;a.target="_blank";a.rel="noopener";});
+  if(REF) document.querySelectorAll("#lang a").forEach(a=>{a.href=a.getAttribute("href").split("?")[0]+"?ref="+REF;});
 }
 function dilUygula(l){
   dil=T[l]?l:"en"; const d=T[dil];
